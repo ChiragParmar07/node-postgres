@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken');
+const userService = require('../services/user/user.service');
+
 const authentication = async (req, res, next) => {
 	try {
 		let token;
@@ -26,7 +29,7 @@ const authentication = async (req, res, next) => {
 		req.userData = { email: email, id: userId };
 
 		// Fetch the current user from the database
-		const currentUser = await UserService.getUserByEmail(email);
+		const currentUser = await userService.getUserFromEmail(email);
 
 		// If the user does not exist, return an unauthorized response
 		if (!currentUser) {
@@ -44,7 +47,6 @@ const authentication = async (req, res, next) => {
 
 		// Attach the current user to the request object
 		req['currentUser'] = currentUser;
-		req.body.userId = currentUser._id;
 
 		// Call the next middleware function
 		next();
@@ -60,3 +62,5 @@ const authentication = async (req, res, next) => {
 		return res.status(401).json({ message: 'You are not authenticated!' });
 	}
 };
+
+module.exports = { authentication };

@@ -15,7 +15,7 @@ const pool = new Pool({
 const executeQuery = async (query, args) => {
 	const result = await pool.query(query, args);
 
-	return result.rows[0];
+	return result.rows;
 };
 
 module.exports = executeQuery;

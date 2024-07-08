@@ -3,14 +3,18 @@ const jsonwebtoken = require('jsonwebtoken');
 const executeQuery = require('../../utils/postgres/connection');
 
 // Find user using email
-const findUserFromEmail = async (email) => {
+const getUserFromEmail = async (email) => {
 	try {
 		const selectQuery = `
-      SELECT *
-      FROM users
-      WHERE email = $1;
+        SELECT
+          *
+        FROM
+          users
+        WHERE
+          email = $1;
     `;
-		const user = await executeQuery(selectQuery, [email]);
+		const result = await executeQuery(selectQuery, [email]);
+		const user = result[0];
 
 		return user;
 	} catch (error) {
@@ -48,23 +52,25 @@ const signupUser = async (payload) => {
 
 		// Create a query for insert user in DB
 		const insertQuery = `
-    INSERT INTO users (name, email, gender, mobile, password)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *;
+        INSERT INTO
+          users (name, email, gender, mobile, password)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
   `;
 
 		// Execute a query
-		const user = await executeQuery(insertQuery, [
+		const result = await executeQuery(insertQuery, [
 			name,
 			email,
 			gender,
 			mobile,
 			password,
 		]);
+		const user = result[0];
 		delete user.password;
 
 		// Generate JWT token for authenticated user
-		const token = await tokenGenerate({ id: user.id });
+		const token = await tokenGenerate({ id: user.id, email: user.email });
 
 		return { user, token };
 	} catch (error) {
@@ -78,7 +84,7 @@ const signinUser = async (payload) => {
 		let { email, password } = payload;
 
 		// Find user if exists or not
-		let user = await findUserFromEmail(email);
+		let user = await getUserFromEmail(email);
 		if (!user) {
 			throw new Error('Invalid email or password');
 		}
@@ -90,13 +96,16 @@ const signinUser = async (payload) => {
 		}
 
 		// Generate JWT token for authenticated user
-		const token = await tokenGenerate({ id: user.id });
+		const token = await tokenGenerate({ id: user.id, email: user.email });
 
 		const updateQuery = `
-    UPDATE users
-    SET login_count = $2,
-    updatedAt = $3
-    WHERE id = $1;
+        UPDATE
+          users
+        SET
+          login_count = $2,
+          updatedAt = $3
+        WHERE
+          id = $1;
     `;
 		await executeQuery(updateQuery, [
 			user.id,
@@ -104,7 +113,7 @@ const signinUser = async (payload) => {
 			new Date(),
 		]);
 
-		user = await findUserFromEmail(email);
+		user = await getUserFromEmail(email);
 		delete user?.password; // Delete password from user object before returning it to client.
 
 		return { user, token };
@@ -116,5 +125,5 @@ const signinUser = async (payload) => {
 module.exports = {
 	signupUser,
 	signinUser,
-	findUserFromEmail,
+	getUserFromEmail,
 };

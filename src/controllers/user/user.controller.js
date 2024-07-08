@@ -20,7 +20,7 @@ const signupUser = async (req, res) => {
 		}
 
 		// Check user is already exists with the provided email or not
-		const existingUser = await userService.findUserFromEmail(payload.email);
+		const existingUser = await userService.getUserFromEmail(payload.email);
 		if (existingUser) {
 			return res.status(400).json({
 				status: 'fail',
