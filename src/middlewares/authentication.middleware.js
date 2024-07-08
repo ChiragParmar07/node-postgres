@@ -23,10 +23,6 @@ const authentication = async (req, res, next) => {
 		// Verify the JWT token and extract user data
 		const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 		const email = decodedToken['email'];
-		const userId = decodedToken['id'];
-
-		// Attach user data to the request object
-		req.userData = { email: email, id: userId };
 
 		// Fetch the current user from the database
 		const currentUser = await userService.getUserFromEmail(email);
@@ -55,7 +51,7 @@ const authentication = async (req, res, next) => {
 		if (error.message === 'jwt expired') {
 			return res
 				.status(401)
-				.json({ message: 'Token Expired! Login to get access.' });
+				.json({ message: 'Token Expired! Login again to get access.' });
 		}
 
 		// Handle other authentication errors

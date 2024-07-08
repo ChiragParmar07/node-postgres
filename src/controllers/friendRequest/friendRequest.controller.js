@@ -11,12 +11,12 @@ const sendFriendRequest = async (req, res) => {
 		);
 
 		if (existingRequest) {
-			if (existingRequest.status === 'pending') {
+			if (existingRequest.status === FRIEND_REQUEST_STATUS.PENDING) {
 				return res.json({
 					status: 'fail',
 					message: 'Friend request already sent',
 				});
-			} else if (existingRequest.status === 'accepted') {
+			} else if (existingRequest.status === FRIEND_REQUEST_STATUS.ACCEPTED) {
 				return res.json({
 					status: 'fail',
 					message: 'You are already friends with this user',
@@ -25,7 +25,7 @@ const sendFriendRequest = async (req, res) => {
 				await friendRequestService.updateFriendRequest(
 					req.currentUser.id,
 					req.body.receiverId,
-					'pending'
+					FRIEND_REQUEST_STATUS.PENDING
 				);
 
 				return res.json({
@@ -85,7 +85,7 @@ const acknowledgeFriendRequest = async (req, res) => {
 		await friendRequestService.updateFriendRequest(
 			req.body.requesterId,
 			req.currentUser.id,
-			FRIEND_REQUEST_STATUS.ACCEPTED
+			req.body.status
 		);
 
 		return res.json({

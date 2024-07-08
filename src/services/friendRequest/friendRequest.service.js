@@ -35,7 +35,8 @@ const getFriendRequest = async (requesterId, receiverId) => {
 const sendFriendRequest = async (requesterId, receiverId) => {
 	try {
 		const insertQuery = `
-        INSERT INTO friend_requests (requesterId, receiverId)
+        INSERT INTO
+          friend_requests (requesterId, receiverId)
         VALUES ($1, $2)
     `;
 		await executeQuery(insertQuery, [requesterId, receiverId]);
